@@ -1,13 +1,13 @@
-import { ChangeEvent, ReactNode, useEffect, useState } from 'react'
+import { ChangeEvent, ReactNode, useEffect, useRef, useState } from 'react'
 import style from './select.module.css'
+import type { Response } from './fetchTop100Films'
+import List from './List'
 
+export type Options = Array<{ value: string; label: string }>
 type SelectChangeEvent = ChangeEvent<HTMLInputElement>
-
-type Options = Array<{ value: string; label: string }>
-
 type SelectProps = {
   value?: string | null
-  options: Options | (() => Promise<Options>)
+  options: Options | (() => Promise<Response>)
   onChange?: (event: SelectChangeEvent) => void
 }
 
@@ -35,22 +35,27 @@ type SelectProps = {
  * - 선택 가능한 option들이 나타날 때, option들이 스크린을 벗어나지 않아야 합니다. 예를 들어, `Select` 아래쪽에 선택 가능한 option들이 나타나기에 공간이 부족하다면, 선택 가능한 option들은 위쪽에 나타나야 합니다.
  * - `Select`가 hover 되는 경우와 focus 되는 경우, 그리고 두 경우가 아닌 경우에 대해 `Select`의 스타일이 달라야 합니다.
  */
+
 function Select({ value, options, onChange }: SelectProps): ReactNode {
+  const hint = useRef('')
   const [inputValue, setInputValue] = useState<string>('')
   const [filteredSuggestions, setFilteredSuggestions] = useState<Options>([])
+  const [absoluteOptions, setAbsoluteOptions] = useState<Options>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState()
 
   useEffect(() => {
     if (Array.isArray(options)) {
-      setFilteredSuggestions(options)
+      setAbsoluteOptions(options)
     } else {
       const fetchOptions = async () => {
         setIsLoading(true)
 
         try {
           const response = await options()
-          setFilteredSuggestions(response)
+          const suggestions = response.result as Options
+          setAbsoluteOptions(suggestions)
+          console.log('response : ', response)
         } catch (e: any) {
           setError(e)
         } finally {
@@ -64,18 +69,22 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
+    console.log(value)
     setInputValue(value)
 
     // Filter suggestions based on input value
-    if (Array.isArray(options)) {
-      const filtered = options.filter(
-        (option) => option.label.toLowerCase().indexOf(value.toLowerCase()) > -1
-      )
-      console.log(filtered)
-      setFilteredSuggestions(filtered)
-    } else {
-      // Fire the function
-    }
+    const filtered = absoluteOptions.filter((option) =>
+      option.label.toLowerCase().trim().includes(value.toLowerCase().trim())
+    )
+    console.log(filtered)
+    setFilteredSuggestions(filtered)
+  }
+
+  const handleSuggestionClick = (suggestion: string) => {
+    // Handle suggestion click (you can update the input value, perform an action, etc.)
+
+    setInputValue(suggestion)
+    setFilteredSuggestions([]) // Clear suggestions
   }
 
   return (
@@ -83,6 +92,7 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
       <div className={style.inputBox}>
         <div>
           <input
+            value={inputValue}
             type='text'
             required
             onChange={handleInputChange}
@@ -90,24 +100,17 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
 
           <span>Label</span>
         </div>
-
-        <ul>
-          {/* {filteredSuggestions.map((suggestion, index) => (
-            <li
-              key={index}
-              onClick={() => handleSuggestionClick(suggestion)}
-            >
-              {suggestion}
-            </li>
-          ))} */}
-        </ul>
-
-        <ul className={style.option}>
-          <li>list1</li>
-          <li>list2</li>
-          <li>list3</li>
-          <li>list4</li>
-        </ul>
+        {inputValue ? (
+          <List
+            options={filteredSuggestions}
+            onClick={handleSuggestionClick}
+          />
+        ) : (
+          <List
+            options={absoluteOptions}
+            onClick={handleSuggestionClick}
+          />
+        )}
       </div>
     </>
   )
