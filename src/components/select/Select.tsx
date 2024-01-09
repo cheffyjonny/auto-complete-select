@@ -1,27 +1,28 @@
-import { ChangeEvent, ReactNode, useEffect, useRef, useState } from 'react'
+import {
+  ChangeEvent,
+  Fragment,
+  KeyboardEvent,
+  ReactNode,
+  forwardRef,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import style from './select.module.css'
 import type { Response } from './fetchTop100Films'
 import List from './List'
+import { BiChevronDown, BiChevronUp, BiX } from 'react-icons/bi'
+import type { Payload } from './List'
 
-export type Options = Array<{ value: string; label: string }>
+export type Options = Array<Option>
+export type Option = { value: string; label: string }
+
 type SelectChangeEvent = ChangeEvent<HTMLInputElement>
 type SelectProps = {
   value?: string | null
   options: Options | (() => Promise<Response>)
   onChange?: (event: SelectChangeEvent) => void
 }
-
-/**
- *
- * renderGroup(renderGroupProp | defaultRenderGroup) -> renderListOption -> renderOption(renderOptionProp || defaultRenderOption)
- *
- * useAutocomplete ()
- *
- * Todo:
- * 1. dropdown
- * 2. Set up dynamic select width
- * 3. Search function -> useRef
- */
 
 /**
  * @description https://mui.com/material-ui/react-autocomplete/#combo-box 에서 Autocomplete > Combo를 참고해 아래의 기능을 구현하세요.
@@ -37,25 +38,44 @@ type SelectProps = {
  */
 
 function Select({ value, options, onChange }: SelectProps): ReactNode {
-  const hint = useRef('')
-  const [inputValue, setInputValue] = useState<string>('')
-  const [filteredSuggestions, setFilteredSuggestions] = useState<Options>([])
-  const [absoluteOptions, setAbsoluteOptions] = useState<Options>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState()
 
+  const wrapperRef = useRef<HTMLFieldSetElement>(null)
+  const select = useRef(false)
+  const action = useRef('')
+  const inputRef = useRef<HTMLInputElement>(null)
+  const resultContainer = useRef<HTMLLIElement>(null)
+
+  const [focusedIndex, setFocusedIndex] = useState(-1)
+  const [isFocused, setIsFocused] = useState(false)
+  const [anchorEl, setAnchorEl] = useState(false)
+  const [inputValue, setInputValue] = useState<string>('')
+  const [selectedOption, setSelectedOption] = useState<string>('')
+  const [dynamicWidth, setDynamicWidth] = useState<number>(0)
+  const [filteredSuggestions, setFilteredSuggestions] = useState<Options>([])
+  const [absoluteOptions, setAbsoluteOptions] = useState<Options>([])
+
   useEffect(() => {
+    const findLongestLabel = (options: Options): Option => {
+      const longest = options.reduce(function (a, b) {
+        return a.label.length > b.label.length ? a : b
+      })
+      return longest
+    }
+
     if (Array.isArray(options)) {
       setAbsoluteOptions(options)
+      setDynamicWidth(findLongestLabel(options).label.length * 8.5)
     } else {
       const fetchOptions = async () => {
         setIsLoading(true)
 
         try {
           const response = await options()
-          const suggestions = response.result as Options
-          setAbsoluteOptions(suggestions)
-          console.log('response : ', response)
+          const optionsResponse = response.result as Options
+          setDynamicWidth(findLongestLabel(optionsResponse).label.length * 8.5)
+          setAbsoluteOptions(optionsResponse)
         } catch (e: any) {
           setError(e)
         } finally {
@@ -67,51 +87,213 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
     }
   }, [])
 
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      if (!select.current) {
+        if (
+          wrapperRef.current &&
+          !wrapperRef.current.contains(event.target as Node)
+        ) {
+          handleClickOffSelect()
+        }
+      } else {
+        // Select an option, close portal and set the input value with the option
+        setAnchorEl(false)
+      }
+    }
+
+    document.addEventListener('click', handleClick)
+    return () => {
+      document.removeEventListener('click', handleClick)
+    }
+  }, [])
+
+  // useEffect(() => {
+  //   // console.log(resultContainer)
+
+  //   if (!resultContainer.current) return
+  //   // console.log(resultContainer.current.scrollHeight)
+  //   // console.log(resultContainer.current.scrollTop)
+  //   resultContainer.current.scrollIntoView({
+  //     behavior: 'smooth',
+  //     block: 'center',
+  //   })
+  // }, [focusedIndex])
+
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setIsFocused(true)
+    setAnchorEl(true)
     const value = event.target.value
-    console.log(value)
+
     setInputValue(value)
 
     // Filter suggestions based on input value
     const filtered = absoluteOptions.filter((option) =>
       option.label.toLowerCase().trim().includes(value.toLowerCase().trim())
     )
-    console.log(filtered)
+
     setFilteredSuggestions(filtered)
   }
 
-  const handleSuggestionClick = (suggestion: string) => {
-    // Handle suggestion click (you can update the input value, perform an action, etc.)
+  const handleClickOffSelect = () => {
+    setInputValue('')
+    setIsFocused(false)
+    setAnchorEl(false)
+  }
 
-    setInputValue(suggestion)
-    setFilteredSuggestions([]) // Clear suggestions
+  const handleSuggestionClick = (payload: Payload) => {
+    select.current = true
+    setInputValue(payload.suggestion.label)
+    setSelectedOption(payload.suggestion.value)
+    setFocusedIndex(payload.index)
+    setFilteredSuggestions([])
+  }
+
+  const handleFieldsetClick = () => {
+    setIsFocused(true)
+    inputRef.current!.focus()
+    setAnchorEl(!anchorEl)
+  }
+
+  const handleBiChevronUpClick = (e: MouseEvent) => {
+    e.stopPropagation()
+    setIsFocused(true)
+    inputRef.current!.focus()
+    setAnchorEl(!anchorEl)
+  }
+
+  const handleBiChevronDownClick = (e: MouseEvent) => {
+    e.stopPropagation()
+    setIsFocused(true)
+    inputRef.current!.focus()
+    setAnchorEl(true)
+  }
+
+  const handleClearClick = (e: MouseEvent) => {
+    e.stopPropagation()
+    setInputValue('')
+    setSelectedOption('')
+    select.current = false
+    setIsFocused(true)
+    setAnchorEl(false)
+    inputRef.current!.focus()
+    setFocusedIndex(-1)
+  }
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const { key } = e
+    action.current = key
+    let nextIndexCount = 0
+
+    // move down
+    if (key === 'ArrowDown')
+      !inputValue || selectedOption
+        ? (nextIndexCount = (focusedIndex + 1) % absoluteOptions.length)
+        : (nextIndexCount = (focusedIndex + 1) % filteredSuggestions.length)
+    // move up
+    if (key === 'ArrowUp')
+      !inputValue || selectedOption
+        ? (nextIndexCount =
+            (focusedIndex + absoluteOptions.length - 1) %
+            absoluteOptions.length)
+        : (nextIndexCount =
+            (focusedIndex + filteredSuggestions.length - 1) %
+            filteredSuggestions.length)
+
+    // // hide search results
+    // if (key === 'Escape') {
+    //   resetSearchComplete()
+    // }
+
+    // // select the current item
+    // if (key === 'Enter') {
+    //   e.preventDefault()
+    //   handleSelection(focusedIndex)
+    // }
+    // console.log(nextIndexCount)
+    console.log(action)
+    setFocusedIndex(nextIndexCount)
+  }
+
+  const ListElement3 = () => {
+    const element = anchorEl ? (
+      !inputValue || selectedOption ? (
+        <List
+          options={absoluteOptions}
+          onClick={handleSuggestionClick}
+          width={dynamicWidth}
+          liRef={resultContainer}
+          focusedIndex={focusedIndex}
+          action={action}
+        />
+      ) : (
+        <List
+          options={filteredSuggestions}
+          onClick={handleSuggestionClick}
+          width={dynamicWidth}
+          focusedIndex={focusedIndex}
+        />
+      )
+    ) : (
+      ''
+    )
+
+    return element
   }
 
   return (
     <>
-      <div className={style.inputBox}>
-        <div>
-          <input
-            value={inputValue}
-            type='text'
-            required
-            onChange={handleInputChange}
-          />
+      {dynamicWidth ? (
+        <div
+          className={style.inputBox}
+          style={{ width: dynamicWidth }}
+          tabIndex={1}
+          onKeyDown={handleKeyDown}
+        >
+          <fieldset
+            ref={wrapperRef}
+            className={isFocused ? style.fieldsetFocused : ''}
+            onClick={handleFieldsetClick}
+          >
+            <input
+              ref={inputRef}
+              value={inputValue}
+              type='text'
+              required
+              onChange={handleInputChange}
+            />
+            <div className={style.buttonBox}>
+              {selectedOption && (
+                <button>
+                  <BiX
+                    size={20}
+                    onClick={handleClearClick}
+                  />
+                </button>
+              )}
 
-          <span>Label</span>
+              <button>
+                {anchorEl ? (
+                  <BiChevronUp
+                    size={20}
+                    onClick={handleBiChevronUpClick}
+                  />
+                ) : (
+                  <BiChevronDown
+                    size={20}
+                    onClick={handleBiChevronDownClick}
+                  />
+                )}
+              </button>
+            </div>
+            <span className={isFocused ? style.spanFocused : ''}>Label</span>
+          </fieldset>
+          {/* <ListElement ref={listRef} /> */}
+          <ListElement3 />
         </div>
-        {inputValue ? (
-          <List
-            options={filteredSuggestions}
-            onClick={handleSuggestionClick}
-          />
-        ) : (
-          <List
-            options={absoluteOptions}
-            onClick={handleSuggestionClick}
-          />
-        )}
-      </div>
+      ) : (
+        <p>Loading...</p>
+      )}
     </>
   )
 }

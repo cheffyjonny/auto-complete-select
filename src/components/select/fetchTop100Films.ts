@@ -27,13 +27,11 @@ const fetchTop100Films = async (): Promise<Response> => {
     result: [],
   }
 
-  console.log(`main start`, res)
-
   try {
     await delay(300)
     res.status = 'complete'
     res.result = top100Films
-    console.log(`main end`, res)
+
     return res
   } catch (error) {
     // Handle errors
