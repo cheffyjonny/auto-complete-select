@@ -1,5 +1,5 @@
 import { DemoPage } from './pages/Demo'
-// import Test from './components/test/Test'
+import Test from './components/test/Test'
 
 function App() {
   return (

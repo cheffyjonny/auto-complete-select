@@ -2,15 +2,19 @@ import {
   ChangeEvent,
   Fragment,
   KeyboardEvent,
+  MouseEventHandler,
   ReactNode,
   forwardRef,
   useEffect,
   useRef,
   useState,
+  MouseEvent,
+  useLayoutEffect,
+  RefObject,
 } from 'react'
 import style from './select.module.css'
 import type { Response } from './fetchTop100Films'
-import List from './List'
+import List, { ListItem } from './List'
 import { BiChevronDown, BiChevronUp, BiX } from 'react-icons/bi'
 import type { Payload } from './List'
 
@@ -40,21 +44,178 @@ type SelectProps = {
 function Select({ value, options, onChange }: SelectProps): ReactNode {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState()
+  const [identity] = useState(Math.floor(Math.random() * 1000))
 
   const wrapperRef = useRef<HTMLFieldSetElement>(null)
-  const select = useRef(false)
-  const action = useRef('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const resultContainer = useRef<HTMLLIElement>(null)
+  const select = useRef(false)
+  const resultContainer = useRef<HTMLDivElement>(null)
 
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const [isFocused, setIsFocused] = useState(false)
   const [anchorEl, setAnchorEl] = useState(false)
   const [inputValue, setInputValue] = useState<string>('')
-  const [selectedOption, setSelectedOption] = useState<string>('')
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(-1)
   const [dynamicWidth, setDynamicWidth] = useState<number>(0)
   const [filteredSuggestions, setFilteredSuggestions] = useState<Options>([])
   const [absoluteOptions, setAbsoluteOptions] = useState<Options>([])
+
+  const onSelect = () => {
+    // onChange()
+    console.log('@@')
+  }
+
+  // Create a ref
+  const onSelectRef = useRef(onSelect)
+
+  // Call the function remotely
+  const callOnSelectRemotely = () => {
+    onSelectRef.current()
+  }
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setIsFocused(true)
+    setAnchorEl(true)
+    const value = event.target.value
+
+    setInputValue(value)
+
+    // Filter suggestions based on input value
+    const filtered = absoluteOptions.filter((option) =>
+      option.label.toLowerCase().trim().includes(value.toLowerCase().trim())
+    )
+
+    setFilteredSuggestions(filtered)
+  }
+
+  const handleClickOffSelect = () => {
+    setInputValue('')
+    setIsFocused(false)
+    setAnchorEl(false)
+  }
+
+  const handleSuggestionClick = (payload: Payload) => {
+    select.current = true
+    // console.log(payload)
+    setInputValue(payload.suggestion.label)
+    setSelectedOptionIndex(payload.index)
+    setFocusedIndex(payload.index)
+
+    callOnSelectRemotely()
+    // setFilteredSuggestions([])
+  }
+
+  const handlePressEnter = (payload: Payload) => {
+    // console.log(payload)
+    select.current = true
+    setInputValue(payload.suggestion.label)
+    setSelectedOptionIndex(payload.index)
+    setFocusedIndex(payload.index)
+    setAnchorEl(false)
+
+    // setFilteredSuggestions([])
+  }
+
+  const handlePressEscape = () => {
+    setAnchorEl(false)
+  }
+
+  const handleFieldsetClick = (e: MouseEvent) => {
+    e.stopPropagation()
+
+    setIsFocused(true)
+    inputRef.current!.focus()
+
+    if (selectedOptionIndex >= 0) {
+      setAnchorEl(true)
+    } else {
+      setAnchorEl(!anchorEl)
+    }
+  }
+
+  const handleBiChevronUpClick = (e: MouseEvent) => {
+    e.stopPropagation()
+    setIsFocused(true)
+    inputRef.current!.focus()
+    setAnchorEl(!anchorEl)
+  }
+
+  const handleBiChevronDownClick = (e: MouseEvent) => {
+    e.stopPropagation()
+    setIsFocused(true)
+    inputRef.current!.focus()
+    setAnchorEl(true)
+  }
+
+  const handleClearClick = (e: MouseEvent) => {
+    e.stopPropagation()
+    setInputValue('')
+    setSelectedOptionIndex(-1)
+    select.current = false
+    setIsFocused(true)
+    setAnchorEl(false)
+    inputRef.current!.focus()
+    setFocusedIndex(-1)
+  }
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const { key } = e
+
+    let nextIndexCount = 0
+
+    // move down
+    if (key === 'ArrowDown') {
+      !inputValue || selectedOptionIndex >= 0
+        ? (nextIndexCount = (focusedIndex + 1) % absoluteOptions.length)
+        : (nextIndexCount = (focusedIndex + 1) % filteredSuggestions.length)
+    }
+    // move up
+    if (key === 'ArrowUp') {
+      !inputValue || selectedOptionIndex >= 0
+        ? (nextIndexCount =
+            (focusedIndex + absoluteOptions.length - 1) %
+            absoluteOptions.length)
+        : (nextIndexCount =
+            (focusedIndex + filteredSuggestions.length - 1) %
+            filteredSuggestions.length)
+
+      // ArrowUp from the default
+      if (focusedIndex === -1) {
+        nextIndexCount = nextIndexCount + 1
+      }
+    }
+
+    if (key === 'Enter' || key === 'Escape') {
+      e.preventDefault()
+
+      if (key === 'Enter') {
+        const selectedOption = document.getElementById(
+          `option-${focusedIndex}`
+        ) as HTMLElement
+
+        const payload = {
+          suggestion: {
+            value: selectedOption.dataset.value || '',
+            label: selectedOption.innerHTML,
+          },
+          index: focusedIndex,
+        }
+        handlePressEnter(payload)
+      } else if (key === 'Escape') {
+        handlePressEscape()
+      }
+
+      return
+    }
+
+    setFocusedIndex(nextIndexCount)
+  }
+
+  const handleOnMouseOver = (e: MouseEvent) => {
+    const nextIndexCount = parseInt(e.currentTarget.id.split('-')[1])
+
+    setFocusedIndex(nextIndexCount)
+  }
 
   useEffect(() => {
     const findLongestLabel = (options: Options): Option => {
@@ -88,7 +249,7 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
   }, [])
 
   useEffect(() => {
-    const handleClick = (event: MouseEvent) => {
+    const handleClick = (event: Event) => {
       if (!select.current) {
         if (
           wrapperRef.current &&
@@ -97,7 +258,6 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
           handleClickOffSelect()
         }
       } else {
-        // Select an option, close portal and set the input value with the option
         setAnchorEl(false)
       }
     }
@@ -108,143 +268,26 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
     }
   }, [])
 
-  // useEffect(() => {
-  //   // console.log(resultContainer)
-
-  //   if (!resultContainer.current) return
-  //   // console.log(resultContainer.current.scrollHeight)
-  //   // console.log(resultContainer.current.scrollTop)
-  //   resultContainer.current.scrollIntoView({
-  //     behavior: 'smooth',
-  //     block: 'center',
-  //   })
-  // }, [focusedIndex])
-
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setIsFocused(true)
-    setAnchorEl(true)
-    const value = event.target.value
-
-    setInputValue(value)
-
-    // Filter suggestions based on input value
-    const filtered = absoluteOptions.filter((option) =>
-      option.label.toLowerCase().trim().includes(value.toLowerCase().trim())
-    )
-
-    setFilteredSuggestions(filtered)
-  }
-
-  const handleClickOffSelect = () => {
-    setInputValue('')
-    setIsFocused(false)
-    setAnchorEl(false)
-  }
-
-  const handleSuggestionClick = (payload: Payload) => {
-    select.current = true
-    setInputValue(payload.suggestion.label)
-    setSelectedOption(payload.suggestion.value)
-    setFocusedIndex(payload.index)
-    setFilteredSuggestions([])
-  }
-
-  const handleFieldsetClick = () => {
-    setIsFocused(true)
-    inputRef.current!.focus()
-    setAnchorEl(!anchorEl)
-  }
-
-  const handleBiChevronUpClick = (e: MouseEvent) => {
-    e.stopPropagation()
-    setIsFocused(true)
-    inputRef.current!.focus()
-    setAnchorEl(!anchorEl)
-  }
-
-  const handleBiChevronDownClick = (e: MouseEvent) => {
-    e.stopPropagation()
-    setIsFocused(true)
-    inputRef.current!.focus()
-    setAnchorEl(true)
-  }
-
-  const handleClearClick = (e: MouseEvent) => {
-    e.stopPropagation()
-    setInputValue('')
-    setSelectedOption('')
-    select.current = false
-    setIsFocused(true)
-    setAnchorEl(false)
-    inputRef.current!.focus()
-    setFocusedIndex(-1)
-  }
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const { key } = e
-    action.current = key
-    let nextIndexCount = 0
-
-    // move down
-    if (key === 'ArrowDown')
-      !inputValue || selectedOption
-        ? (nextIndexCount = (focusedIndex + 1) % absoluteOptions.length)
-        : (nextIndexCount = (focusedIndex + 1) % filteredSuggestions.length)
-    // move up
-    if (key === 'ArrowUp')
-      !inputValue || selectedOption
-        ? (nextIndexCount =
-            (focusedIndex + absoluteOptions.length - 1) %
-            absoluteOptions.length)
-        : (nextIndexCount =
-            (focusedIndex + filteredSuggestions.length - 1) %
-            filteredSuggestions.length)
-
-    // // hide search results
-    // if (key === 'Escape') {
-    //   resetSearchComplete()
-    // }
-
-    // // select the current item
-    // if (key === 'Enter') {
-    //   e.preventDefault()
-    //   handleSelection(focusedIndex)
-    // }
-    // console.log(nextIndexCount)
-    console.log(action)
-    setFocusedIndex(nextIndexCount)
-  }
-
-  const ListElement3 = () => {
-    const element = anchorEl ? (
-      !inputValue || selectedOption ? (
-        <List
-          options={absoluteOptions}
-          onClick={handleSuggestionClick}
-          width={dynamicWidth}
-          liRef={resultContainer}
-          focusedIndex={focusedIndex}
-          action={action}
-        />
-      ) : (
-        <List
-          options={filteredSuggestions}
-          onClick={handleSuggestionClick}
-          width={dynamicWidth}
-          focusedIndex={focusedIndex}
-        />
-      )
-    ) : (
-      ''
-    )
-
-    return element
-  }
+  useEffect(() => {
+    console.log('focusedIndex: ', focusedIndex)
+    // console.log('useEffect: ', resultContainer)
+    if (!resultContainer.current) {
+      // console.log('NONE!!!!!!!!!!!')
+      return
+    } else {
+      // console.log('Yay')
+      // console.log(resultContainer)
+      resultContainer.current.scrollIntoView({
+        block: 'nearest',
+      })
+    }
+  }, [focusedIndex, anchorEl])
 
   return (
     <>
       {dynamicWidth ? (
         <div
+          id={`input-box-${identity}`}
           className={style.inputBox}
           style={{ width: dynamicWidth }}
           tabIndex={1}
@@ -255,6 +298,17 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
             className={isFocused ? style.fieldsetFocused : ''}
             onClick={handleFieldsetClick}
           >
+            <select style={{ display: 'none' }}>
+              {absoluteOptions.map((suggestion, index) => (
+                <option
+                  key={suggestion.value}
+                  value={suggestion.value}
+                >
+                  {suggestion.label}
+                </option>
+              ))}
+            </select>
+
             <input
               ref={inputRef}
               value={inputValue}
@@ -263,7 +317,7 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
               onChange={handleInputChange}
             />
             <div className={style.buttonBox}>
-              {selectedOption && (
+              {selectedOptionIndex >= 0 && (
                 <button>
                   <BiX
                     size={20}
@@ -288,8 +342,56 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
             </div>
             <span className={isFocused ? style.spanFocused : ''}>Label</span>
           </fieldset>
-          {/* <ListElement ref={listRef} /> */}
-          <ListElement3 />
+
+          {anchorEl ? (
+            !inputValue || selectedOptionIndex >= 0 ? (
+              <List
+                width={dynamicWidth}
+                identity={identity}
+              >
+                {absoluteOptions.length > 0 ? (
+                  absoluteOptions.map((suggestion, index) => (
+                    <ListItem
+                      key={index}
+                      suggestion={suggestion}
+                      index={index}
+                      focusedIndex={focusedIndex}
+                      onClick={handleSuggestionClick}
+                      onMouseOver={handleOnMouseOver}
+                      resultContainer={resultContainer}
+                      selectedOptionIndex={selectedOptionIndex}
+                    />
+                  ))
+                ) : (
+                  <p>No options</p>
+                )}
+              </List>
+            ) : (
+              <List
+                width={dynamicWidth}
+                identity={identity}
+              >
+                {filteredSuggestions.length > 0 ? (
+                  filteredSuggestions.map((suggestion, index) => (
+                    <ListItem
+                      key={index}
+                      suggestion={suggestion}
+                      index={index}
+                      focusedIndex={focusedIndex}
+                      onClick={handleSuggestionClick}
+                      onMouseOver={handleOnMouseOver}
+                      resultContainer={resultContainer}
+                      selectedOptionIndex={selectedOptionIndex}
+                    />
+                  ))
+                ) : (
+                  <p>No options</p>
+                )}
+              </List>
+            )
+          ) : (
+            ''
+          )}
         </div>
       ) : (
         <p>Loading...</p>

@@ -1,18 +1,28 @@
-import React, { useRef } from 'react'
-import Dropdown from './Dropdown'
-import type { DropdownRef } from './Dropdown'
+import ListComponent from './ListComponent'
 
-const App: React.FC = () => {
-  const dropdownRef = useRef<DropdownRef>(null)
+const App = () => {
+  const items = [
+    'Item 1',
+    'Item 2',
+    'Item 3',
+    'Item 4',
+    'Item 4',
+    'Item 4',
+    'Item 4',
+    'Item 4',
+  ]
 
-  const handleButtonClick = (index: number) => {
-    dropdownRef.current?.scrollToItem(index)
+  const handleSelect = (selectedItem) => {
+    console.log('Selected item:', selectedItem)
   }
 
   return (
     <div>
-      <button onClick={() => handleButtonClick(3)}>Scroll to Item 3</button>
-      <Dropdown ref={dropdownRef} />
+      <h1>List Component Demo</h1>
+      <ListComponent
+        items={items}
+        onSelect={handleSelect}
+      />
     </div>
   )
 }
