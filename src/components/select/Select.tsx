@@ -1,31 +1,26 @@
 import {
   ChangeEvent,
-  Fragment,
   KeyboardEvent,
-  MouseEventHandler,
   ReactNode,
-  forwardRef,
   useEffect,
   useRef,
   useState,
   MouseEvent,
-  useLayoutEffect,
-  RefObject,
+  useId,
 } from 'react'
+import { BiChevronDown, BiChevronUp, BiX } from 'react-icons/bi'
 import style from './select.module.css'
+
 import type { Response } from './fetchTop100Films'
 import List, { ListItem } from './List'
-import { BiChevronDown, BiChevronUp, BiX } from 'react-icons/bi'
-import type { Payload } from './List'
 
 export type Options = Array<Option>
 export type Option = { value: string; label: string }
 
-type SelectChangeEvent = ChangeEvent<HTMLInputElement>
 type SelectProps = {
   value?: string | null
   options: Options | (() => Promise<Response>)
-  onChange?: (event: SelectChangeEvent) => void
+  onChange?: (payload: Option) => void
 }
 
 /**
@@ -42,9 +37,9 @@ type SelectProps = {
  */
 
 function Select({ value, options, onChange }: SelectProps): ReactNode {
+  const identity = useId()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState()
-  const [identity] = useState(Math.floor(Math.random() * 1000))
 
   const wrapperRef = useRef<HTMLFieldSetElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -55,36 +50,24 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
   const [isFocused, setIsFocused] = useState(false)
   const [anchorEl, setAnchorEl] = useState(false)
   const [inputValue, setInputValue] = useState<string>('')
+
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(-1)
+  const [selectedOption, setSelectedOption] = useState({ label: '', value: '' })
   const [dynamicWidth, setDynamicWidth] = useState<number>(0)
   const [filteredSuggestions, setFilteredSuggestions] = useState<Options>([])
   const [absoluteOptions, setAbsoluteOptions] = useState<Options>([])
 
-  const onSelect = () => {
-    // onChange()
-    console.log('@@')
-  }
-
-  // Create a ref
-  const onSelectRef = useRef(onSelect)
-
-  // Call the function remotely
-  const callOnSelectRemotely = () => {
-    onSelectRef.current()
-  }
-
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setIsFocused(true)
     setAnchorEl(true)
-    const value = event.target.value
 
+    const value = event.target.value
     setInputValue(value)
 
-    // Filter suggestions based on input value
     const filtered = absoluteOptions.filter((option) =>
       option.label.toLowerCase().trim().includes(value.toLowerCase().trim())
     )
-
+    console.log(filtered)
     setFilteredSuggestions(filtered)
   }
 
@@ -94,30 +77,16 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
     setAnchorEl(false)
   }
 
-  const handleSuggestionClick = (payload: Payload) => {
+  const handleSuggestionClick = (option: Option) => {
     select.current = true
-    // console.log(payload)
-    setInputValue(payload.suggestion.label)
-    setSelectedOptionIndex(payload.index)
-    setFocusedIndex(payload.index)
 
-    callOnSelectRemotely()
-    // setFilteredSuggestions([])
-  }
+    setInputValue(option.label)
+    setSelectedOptionIndex(parseInt(option.value))
+    setSelectedOption(option)
+    setFocusedIndex(parseInt(option.value))
 
-  const handlePressEnter = (payload: Payload) => {
-    // console.log(payload)
-    select.current = true
-    setInputValue(payload.suggestion.label)
-    setSelectedOptionIndex(payload.index)
-    setFocusedIndex(payload.index)
-    setAnchorEl(false)
-
-    // setFilteredSuggestions([])
-  }
-
-  const handlePressEscape = () => {
-    setAnchorEl(false)
+    const test = { value: option.value.toString(), label: option.label }
+    onChange?.(test)
   }
 
   const handleFieldsetClick = (e: MouseEvent) => {
@@ -158,20 +127,45 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
     setFocusedIndex(-1)
   }
 
+  const handlePressEnter = (option: Option) => {
+    // Films object set with own value, and the value is One-based numbering, but focusedIndex, selectedOptionIndex are Zero-based numbering.
+    const convertedValue = parseInt(option.value) - 1
+
+    select.current = true
+    setInputValue(option.label)
+    setSelectedOptionIndex(convertedValue)
+    setSelectedOption(option)
+    setFocusedIndex(convertedValue)
+    setAnchorEl(false)
+
+    const test = { value: option.value, label: option.label }
+    onChange?.(test)
+  }
+
+  const handlePressEscape = () => {
+    setAnchorEl(false)
+  }
+
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const { key } = e
-
     let nextIndexCount = 0
 
+    console.log('focusedIndex: ', focusedIndex)
     // move down
     if (key === 'ArrowDown') {
-      !inputValue || selectedOptionIndex >= 0
+      e.stopPropagation()
+      setAnchorEl(true)
+      !inputValue ||
+      (selectedOptionIndex >= 0 && selectedOption.label == inputValue)
         ? (nextIndexCount = (focusedIndex + 1) % absoluteOptions.length)
         : (nextIndexCount = (focusedIndex + 1) % filteredSuggestions.length)
     }
     // move up
     if (key === 'ArrowUp') {
-      !inputValue || selectedOptionIndex >= 0
+      e.stopPropagation()
+      setAnchorEl(true)
+      !inputValue ||
+      (selectedOptionIndex >= 0 && selectedOption.label == inputValue)
         ? (nextIndexCount =
             (focusedIndex + absoluteOptions.length - 1) %
             absoluteOptions.length)
@@ -185,22 +179,24 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
       }
     }
 
+    // Handle enter and esc
     if (key === 'Enter' || key === 'Escape') {
       e.preventDefault()
 
       if (key === 'Enter') {
+        // Films object set with own value, and the value starts from 1, but focusedIndex index starts from 0
+        const convertedValue = focusedIndex + 1
+
         const selectedOption = document.getElementById(
-          `option-${focusedIndex}`
+          `option-${convertedValue}`
         ) as HTMLElement
 
-        const payload = {
-          suggestion: {
-            value: selectedOption.dataset.value || '',
-            label: selectedOption.innerHTML,
-          },
-          index: focusedIndex,
+        const option = {
+          value: selectedOption.dataset.value!,
+          label: selectedOption.innerHTML,
         }
-        handlePressEnter(payload)
+
+        handlePressEnter(option)
       } else if (key === 'Escape') {
         handlePressEscape()
       }
@@ -212,7 +208,7 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
   }
 
   const handleOnMouseOver = (e: MouseEvent) => {
-    const nextIndexCount = parseInt(e.currentTarget.id.split('-')[1])
+    const nextIndexCount = parseInt(e.currentTarget.id.split('-')[1]) - 1
 
     setFocusedIndex(nextIndexCount)
   }
@@ -266,17 +262,12 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
     return () => {
       document.removeEventListener('click', handleClick)
     }
-  }, [])
+  }, [identity])
 
   useEffect(() => {
-    console.log('focusedIndex: ', focusedIndex)
-    // console.log('useEffect: ', resultContainer)
     if (!resultContainer.current) {
-      // console.log('NONE!!!!!!!!!!!')
       return
     } else {
-      // console.log('Yay')
-      // console.log(resultContainer)
       resultContainer.current.scrollIntoView({
         block: 'nearest',
       })
@@ -288,6 +279,7 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
       {dynamicWidth ? (
         <div
           id={`input-box-${identity}`}
+          key={`input-box-${identity}`}
           className={style.inputBox}
           style={{ width: dynamicWidth }}
           tabIndex={1}
@@ -295,27 +287,20 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
         >
           <fieldset
             ref={wrapperRef}
+            id={`fieldset-${identity}`}
+            key={`fieldset-${identity}`}
             className={isFocused ? style.fieldsetFocused : ''}
             onClick={handleFieldsetClick}
           >
-            <select style={{ display: 'none' }}>
-              {absoluteOptions.map((suggestion, index) => (
-                <option
-                  key={suggestion.value}
-                  value={suggestion.value}
-                >
-                  {suggestion.label}
-                </option>
-              ))}
-            </select>
-
             <input
               ref={inputRef}
               value={inputValue}
+              key={`input-${identity}`}
               type='text'
               required
               onChange={handleInputChange}
             />
+
             <div className={style.buttonBox}>
               {selectedOptionIndex >= 0 && (
                 <button>
@@ -325,7 +310,6 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
                   />
                 </button>
               )}
-
               <button>
                 {anchorEl ? (
                   <BiChevronUp
@@ -344,7 +328,9 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
           </fieldset>
 
           {anchorEl ? (
-            !inputValue || selectedOptionIndex >= 0 ? (
+            // There is no input value, OR the input gets clicked with selectedOption
+            !inputValue ||
+            (selectedOptionIndex >= 0 && selectedOption.label == inputValue) ? (
               <List
                 width={dynamicWidth}
                 identity={identity}
@@ -367,6 +353,7 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
                 )}
               </List>
             ) : (
+              // When user searches regardless of selectedOption
               <List
                 width={dynamicWidth}
                 identity={identity}
@@ -394,6 +381,7 @@ function Select({ value, options, onChange }: SelectProps): ReactNode {
           )}
         </div>
       ) : (
+        // During fetching...
         <p>Loading...</p>
       )}
     </>
