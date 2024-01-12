@@ -1,6 +1,5 @@
-import { DemoPage } from './pages/Demo'
-import Test from './components/test/Test'
-import { SelectContext } from './context/context'
+import { DemoPage } from './pages/DemoPage'
+
 function App() {
   return (
     <>

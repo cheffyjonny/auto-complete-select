@@ -1,5 +1,5 @@
-import top100Films from './top100Films.json'
-import top100FilmsLonger from './top100FilmsLonger.json'
+import top100Films from './data/top100Films.json'
+import top100FilmsLonger from './data/top100FilmsLonger.json'
 
 type Data = Array<{ value: string; label: string }>
 export type Response = {
