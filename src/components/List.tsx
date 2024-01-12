@@ -111,7 +111,7 @@ List.ListItem = forwardRef<HTMLDivElement, ListItemProps>(
       selectedOptionIndex: number
     ) => {
       if (convertedIndex === selectedOptionIndex) {
-        return 'red'
+        return 'rgb(77, 138, 131)'
       } else if (index === focusedIndex) {
         return 'rgb(80, 80, 80)'
       } else return ''
