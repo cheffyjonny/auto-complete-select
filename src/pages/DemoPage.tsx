@@ -12,8 +12,6 @@ function DemoPage() {
   const [selectedValue3, setSelectedValue3] = useState<string>('')
   return (
     <div>
-      <h1>You got this!</h1>
-
       <Select
         value={selectedValue}
         options={top100Films}

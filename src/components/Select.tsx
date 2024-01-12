@@ -25,6 +25,12 @@ type SelectProps = {
   label?: string
 }
 
+/** John's Questions  질문입니다!!
+ *
+ * Should I make the fieldset into a component?
+ * How do I make it more concise?
+ * */
+
 /**
  * @description https://mui.com/material-ui/react-autocomplete/#combo-box 에서 Autocomplete > Combo를 참고해 아래의 기능을 구현하세요.
  * - `Select` 의 option 은 배열과 함수, 두 가지 타입이 가능해야 합니다.
