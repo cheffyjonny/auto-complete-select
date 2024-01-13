@@ -69,12 +69,12 @@ function Select({
   const [filteredSuggestions, setFilteredSuggestions] = useState<Options>([])
   const [absoluteOptions, setAbsoluteOptions] = useState<Options>([])
 
-  // John's NOTE : This Select.tsx component has some business logic
+  // John's NOTE : This Select.tsx component has some logic
   //               1. show the original options / WITHOUT search value
   //               2. show the original options / WITH selected option && focus input again
   //               2. show filtered options / WITH search value
   //               2. show filtered options / WITH selected option && WITH search value
-  const logicBehind = // logicBehind applies the business logic.
+  const logicBehind = // logicBehind applies the logic.
     !inputValue ||
     (selectedOptionValue >= 0 && selectedOption.label == inputValue)
 
