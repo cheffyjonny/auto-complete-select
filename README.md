@@ -36,3 +36,8 @@ library 혹은 framework를 사용하지 않고 컴포넌트를 만드는 작업
 감사합니다.
 
 이주헌 드림.
+
+# 실행법
+
+- To install the package and run the project: `npm install && npm start`
+- To test the project : npm run test
