@@ -52,20 +52,20 @@ function Select({
 }: SelectProps): ReactNode {
   const identity = useId()
   const [isLoading, setIsLoading] = useState(false)
+  const [dynamicWidth, setDynamicWidth] = useState<number>(0)
 
-  const wrapperRef = useRef<HTMLFieldSetElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const resultContainer = useRef<HTMLDivElement>(null)
+  const resultContainerRef = useRef<HTMLDivElement>(null)
 
-  const [focusedIndex, setFocusedIndex] = useState(-1)
   const [isFocused, setIsFocused] = useState(false)
   const [isActivated, setIsActivated] = useState(false)
   const [anchorEl, setAnchorEl] = useState(false)
   const [inputValue, setInputValue] = useState<string>('')
 
-  const [selectedOptionIndex, setSelectedOptionIndex] = useState(-1)
+  const [focusedIndex, setFocusedIndex] = useState(-1)
   const [selectedOption, setSelectedOption] = useState({ label: '', value: '' })
-  const [dynamicWidth, setDynamicWidth] = useState<number>(0)
+  const [selectedOptionValue, setSelectedOptionValue] = useState(-1)
+
   const [filteredSuggestions, setFilteredSuggestions] = useState<Options>([])
   const [absoluteOptions, setAbsoluteOptions] = useState<Options>([])
 
@@ -76,7 +76,7 @@ function Select({
   //               2. show filtered options / WITH selected option && WITH search value
   const logicBehind = // logicBehind applies the business logic.
     !inputValue ||
-    (selectedOptionIndex >= 0 && selectedOption.label == inputValue)
+    (selectedOptionValue >= 0 && selectedOption.label == inputValue)
 
   const optionFromList = logicBehind
     ? absoluteOptions[focusedIndex]
@@ -97,7 +97,7 @@ function Select({
   }
 
   const handleClickOffSelect = () => {
-    if (selectedOptionIndex === -1) {
+    if (selectedOptionValue === -1) {
       setInputValue('')
       setIsActivated(false)
     }
@@ -111,12 +111,13 @@ function Select({
     setAnchorEl(false)
   }
 
+  // As a result, focusedIndex and selectedOptionValue will be the same as this point.
   const handleSuggestionClick = () => {
     const convertedValue = convertNumbering(optionFromList.value)
 
     setIsActivated(true)
     setInputValue(optionFromList.label)
-    setSelectedOptionIndex(convertedValue)
+    setSelectedOptionValue(convertedValue)
     setSelectedOption(optionFromList)
     setFocusedIndex(convertedValue)
     setIsFocused(true)
@@ -130,7 +131,7 @@ function Select({
     setIsFocused(true)
     inputRef.current!.focus()
 
-    if (selectedOptionIndex >= 0) {
+    if (selectedOptionValue >= 0) {
       setAnchorEl(true)
     } else {
       setAnchorEl(!anchorEl)
@@ -157,19 +158,20 @@ function Select({
     e.stopPropagation()
 
     setInputValue('')
-    setSelectedOptionIndex(-1)
+    setSelectedOptionValue(-1)
     inputRef.current!.focus()
     setAnchorEl(false)
     setFocusedIndex(-1)
     setIsFocused(true)
   }
 
+  // As a result, focusedIndex and selectedOptionValue will be the same as this point.
   const handlePressEnter = () => {
     const convertedValue = convertNumbering(optionFromList.value)
 
     setIsActivated(true)
     setInputValue(optionFromList.label)
-    setSelectedOptionIndex(convertedValue)
+    setSelectedOptionValue(convertedValue)
     setSelectedOption(optionFromList)
     setFocusedIndex(convertedValue)
     setAnchorEl(false)
@@ -184,7 +186,7 @@ function Select({
   const handlePressEscape = () => {
     setAnchorEl(false)
     if (!anchorEl) {
-      if (selectedOptionIndex === -1) {
+      if (selectedOptionValue === -1) {
         setInputValue('')
         setIsActivated(false)
       } else {
@@ -253,7 +255,7 @@ function Select({
       setIsActivated(true)
       setInputValue(option.label)
 
-      setSelectedOptionIndex(optionIndex)
+      setSelectedOptionValue(optionIndex)
       setSelectedOption(option)
     }
 
@@ -294,11 +296,12 @@ function Select({
     }
   }, [])
 
+  // Scroll to the focusedIndex when handleKeyDown runs.
   useEffect(() => {
-    if (!resultContainer.current) {
+    if (!resultContainerRef.current) {
       return
     } else {
-      resultContainer.current.scrollIntoView({
+      resultContainerRef.current.scrollIntoView({
         block: 'nearest',
       })
     }
@@ -319,7 +322,6 @@ function Select({
         >
           <fieldset
             role='fieldset'
-            ref={wrapperRef}
             id={`fieldset-${identity}`}
             key={`fieldset-${identity}`}
             className={isFocused ? style.fieldsetFocused : ''}
@@ -336,7 +338,7 @@ function Select({
             />
 
             <div className={style.buttonBox}>
-              {selectedOptionIndex >= 0 && (
+              {selectedOptionValue >= 0 && (
                 <button role='cancelBtn'>
                   <BiX
                     size={20}
@@ -383,8 +385,8 @@ function Select({
                       focusedIndex={focusedIndex}
                       onMouseDown={handleSuggestionClick}
                       onMouseOver={handleOnMouseOver}
-                      ref={resultContainer}
-                      selectedOptionIndex={selectedOptionIndex}
+                      ref={resultContainerRef}
+                      selectedOptionValue={selectedOptionValue}
                     />
                   ))
                 ) : (
@@ -405,8 +407,8 @@ function Select({
                       focusedIndex={focusedIndex}
                       onMouseDown={handleSuggestionClick}
                       onMouseOver={handleOnMouseOver}
-                      ref={resultContainer}
-                      selectedOptionIndex={selectedOptionIndex}
+                      ref={resultContainerRef}
+                      selectedOptionValue={selectedOptionValue}
                     />
                   ))
                 ) : (

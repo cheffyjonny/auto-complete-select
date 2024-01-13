@@ -20,7 +20,7 @@ type ListItemProps = {
   suggestion: Option
   index: number
   focusedIndex: number
-  selectedOptionIndex: number
+  selectedOptionValue: number
   onMouseDown: () => void
   onMouseOver: MouseEventHandler<HTMLDivElement>
 }
@@ -98,19 +98,19 @@ List.ListItem = forwardRef<HTMLDivElement, ListItemProps>(
       suggestion,
       index,
       focusedIndex,
-      selectedOptionIndex,
+      selectedOptionValue,
       onMouseDown,
       onMouseOver,
     },
     ref
   ) => {
-    const convertedIndex = convertNumbering(suggestion.value)
+    const convertedValue = convertNumbering(suggestion.value)
 
     const backgroundColor = (
       focusedIndex: number,
-      selectedOptionIndex: number
+      selectedOptionValue: number
     ) => {
-      if (convertedIndex === selectedOptionIndex) {
+      if (convertedValue === selectedOptionValue) {
         return 'rgb(77, 138, 131)'
       } else if (index === focusedIndex) {
         return 'rgb(80, 80, 80)'
@@ -122,10 +122,10 @@ List.ListItem = forwardRef<HTMLDivElement, ListItemProps>(
         id={`option-${index}`}
         data-value={suggestion.value}
         className={style.listItem}
-        ref={convertedIndex === focusedIndex ? ref : null}
+        ref={convertedValue === focusedIndex ? ref : null}
         onMouseDown={onMouseDown}
         style={{
-          backgroundColor: backgroundColor(focusedIndex, selectedOptionIndex),
+          backgroundColor: backgroundColor(focusedIndex, selectedOptionValue),
         }}
         onMouseOver={onMouseOver}
       >
