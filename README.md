@@ -71,8 +71,8 @@ div
 
 # 실행법
 
-To install the package and run the project: `npm install && npm start` <br>
-To test the project : npm run test
+To install the package and run the project: `npm install && npm run dev` <br>
+To test the project : `npm run test`
 
 ## Demo.tsx 셋업
 
