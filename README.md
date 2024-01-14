@@ -34,8 +34,8 @@ div
 - input : 키보드 타입의 값어치 입력을 위한 인풋 컴포넌트 - 키보드 입력값 `onChange(handleInputChange)` 이벤트 핸들링
 - button : 검색값에 따른 option(또는 기본 option) 디스플레이, 입력값 초기화를 위한 버튼 컴포넌트 - `onClick(handleClearClick`, `handleBiChevronUpClick`, `handleBiChevronDownClick)` 이벤트 핸들링
 - span : `Select.tsx`의 `label` 디스플레이
-- <List> : 검색 입력값에 따른 option 목록 디스플레이를 위한 React 컴포넌트 - `anchorEl` 입력값이 `true` 시, `createPortal`를 통하여 option 목록 디스플레이
-- <List.ListItem> : 각각의 option 디스플레이를 위한 React 컴포넌트 - `onMouseDown(handleSuggestionClick)`, `onMouseOver(handleOnMouseOver)` 이벤트 핸들링
+- `<List>` : 검색 입력값에 따른 option 목록 디스플레이를 위한 React 컴포넌트 - `anchorEl` 입력값이 `true` 시, `createPortal`를 통하여 option 목록 디스플레이
+- `<List.ListItem>` : 각각의 option 디스플레이를 위한 React 컴포넌트 - `onMouseDown(handleSuggestionClick)`, `onMouseOver(handleOnMouseOver)` 이벤트 핸들링
 
 ## 사용된 논리
 
