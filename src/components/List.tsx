@@ -59,6 +59,8 @@ const List = ({ width, identity, children }: ListProps) => {
     }
     // Check the space initially.
     handleScroll()
+
+    // To reduce the amount of calling the function.
     const timer = setInterval(() => {
       window.addEventListener('scroll', handleScroll)
     }, 1000)
