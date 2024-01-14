@@ -19,6 +19,7 @@
 
 ## 구조 및 기능
 
+```
 Div (Parent 컴포넌트 - `onBlue(handleClickOffSelect)` 와 `onKeyDown(handleKeyDown)` 이벤트 헨들링)
 ├── fieldset (컴포넌트 그룹화를 위한 컴포넌트 - `Select.tsx`의 `onClick(handleFieldsetClick)` 이벤트 핸들링)
 │ ├── input (키보드 타입의 값어치 입력을 위한 인풋 컴포넌트 - 키보드 입력값 `onChange(handleInputChange)` 이벤트 핸들링 )
@@ -26,6 +27,7 @@ Div (Parent 컴포넌트 - `onBlue(handleClickOffSelect)` 와 `onKeyDown(handle
 │ └── span (`Select.tsx`의 `label` 디스플레이)
 └── <List> (검색 입력값에 따른 option 목록 디스플레이를 위한 React 컴포넌트 - `anchorEl` 입력값이 `true` 시, `createPortal`를 통하여 option 목록 디스플레이)
 └── <List.ListItem> (각각의 option 디스플레이를 위한 React 컴포넌트 - `onMouseDown(handleSuggestionClick)`, `onMouseOver(handleOnMouseOver)` 이벤트 핸들링)
+```
 
 ## 사용된 논리
 
@@ -61,7 +63,7 @@ Div (Parent 컴포넌트 - `onBlue(handleClickOffSelect)` 와 `onKeyDown(handle
 
 # 실행법
 
-To install the package and run the project: `npm install && npm start`
+To install the package and run the project: `npm install && npm start` <br>
 To test the project : npm run test
 
 ## Demo.tsx 셋업
