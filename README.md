@@ -1,6 +1,6 @@
 # Intro
 
-This is a generic component. It's a auto complete select box. <br>
+This is a generic component. It's a auto complete select box that take options from an array or an API call.<br>
 It has used only React + TS.
 
 ## Structure
@@ -59,3 +59,6 @@ div
 
 To install the package and run the project: `npm install && npm run dev` <br>
 To test the project : `npm run test`
+
+It has set up with specific height of the page to test the functions.<br>
+Also, it has set up with different options to see the difference for two things, width and the functionality.
