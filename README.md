@@ -3,7 +3,7 @@
 This is a generic component. It's a auto complete select box that take options from an array or an API call.<br>
 It has used only React + TS.
 
-## Structure
+# Structure
 
 ```
 div
@@ -23,9 +23,9 @@ div
 - `<List>` : Options parent React component - Displaying option list through `createPortal` when `anchorEl` is `true`
 - `<List.ListItem>` : Option item React component - Event handling for `onMouseDown(handleSuggestionClick)` and `onMouseOver(handleOnMouseOver)`
 
-## Logic
+# Logic
 
-### Select.tsx
+## Select.tsx
 
 - `inputRef`: `ref` for focusing input
 - `resultContainerRef`: `ref` for scrolling on option list with keyboard actions
@@ -41,13 +41,13 @@ div
 - `injectValue` : To Inject default value
 - `resultContainerRef.current.scrollIntoView({block: 'nearest'})` : To scroll with keyboard on the option list
 
-### List.tsx
+## List.tsx
 
-#### List
+### List
 
 - `handleScroll` : To render the option list either above or below of the component depending on the space. It uses `setInterval` to reduce calling the function.
 
-#### ListItem
+### ListItem
 
 - `backgroundColor` : Applying background color according to `focusedIndex` and `selectedOptionValue`
 
