@@ -34,19 +34,19 @@ div
 - `selectedOption` : input `value`값 디스플레이를 위한 `state`
 - `selectedOptionValue` : 선택된 option 디스플레이를 위한 `state`
 
-- `findLongestLabel` : option 값들 중 가장 긴 `label`를 탐색 후, 그 값에 따른 `width`를 `Select.tsx`에 적용하였습니다.
-- `injectValue` : option 목록 생성중, `Select.tsx`에 입력된 기본값(`value`)이 있을 시, option 목록에서 값을 가져와 디스플레이 하도록 구현하였습니다.
-- `resultContainerRef.current.scrollIntoView({block: 'nearest',})` : 키보드 입력값 따른 이벤트 핸들링을 위하여 `useEffect` Hook와 `ref`를 사용하여 스크롤 하도록 구현하였습니다.
+- `findLongestLabel` : option 값들 중 가장 긴 `label`를 탐색 후, 그 값에 따른 `width`를 `Select.tsx`에 적용
+- `injectValue` : option 목록 생성중, `Select.tsx`에 입력된 기본값(`value`)이 있을 시, option 목록에서 값을 가져와 디스플레이 하도록 구현
+- `resultContainerRef.current.scrollIntoView({block: 'nearest',})` : 키보드 입력값 따른 이벤트 핸들링을 위하여 `useEffect` Hook와 `ref`를 사용하여 스크롤 하도록 구현
 
 ### List.tsx
 
 #### List
 
-- `handleScroll` : `Select.tsx` 컴포넌트 위 혹은 아래의 충분한 공간 여부 확인 후 option 목록 디스플레이를 구현하였습니다. `setInterval` JavaScript function를 활용하여 스크롤 이벤트 빈도 횟수를 줄엿습니다.
+- `handleScroll` : `Select.tsx` 컴포넌트 위 혹은 아래의 충분한 공간 여부 확인 후 option 목록 디스플레이를 구현하였습니다. `setInterval` JavaScript function를 활용하여 스크롤 이벤트 빈도 횟수를 줄임
 
 #### ListItem
 
-- `backgroundColor` : `focusedIndex`와 `selectedOptionValue`의 값을 통한 배경 색을 적용함으로서, 선택된 option 디스플레이와 `onMouseOver` 이벤트에 따른 option 배경색 적용을 구현하였습니다.
+- `backgroundColor` : `focusedIndex`와 `selectedOptionValue`의 값을 통한 배경 색을 적용함으로서, 선택된 option 디스플레이와 `onMouseOver` 이벤트에 따른 option 배경색 적용을 구현
 
 <br>
 <br>
@@ -56,9 +56,3 @@ div
 
 To install the package and run the project: `npm install && npm run dev` <br>
 To test the project : `npm run test`
-
-## Demo.tsx 셋업
-
-- Demo.tsx 페이지에 임의적인 height를 주어서 제시해주신 과제 목록 중 한가지인 공간에 따른 디스플레이를 테스트 할 수 있도록 구성하였습니다.
-- 제공해주신 2가지 컴포넌트 에 selectedValue를 주어, 기본값 제시시 디스플레이 여부를 확인할 수 있도록 하였습니다.
-- 목록 중 가장 긴 옵션에 따라 width변경을 보여드리기 위하여, 새로운 mock data(top100FilmsLonger.json)를 만들어 적용하였습니다.
