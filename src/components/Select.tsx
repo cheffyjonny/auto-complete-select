@@ -13,7 +13,7 @@ import { BiChevronDown, BiChevronUp, BiX } from 'react-icons/bi'
 import style from './select.module.css'
 import List from './List'
 import type { Response } from '../server/fetchTop100Films'
-import convertNumbering from '@/hooks/convertNumbering'
+import convertNumbering from '@/utils/convertNumbering'
 
 export type Options = Array<Option>
 export type Option = { value: string; label: string }
@@ -320,14 +320,17 @@ function Select({
 
             <div className={style.buttonBox}>
               {selectedOptionValue >= 0 && (
-                <button role='cancelBtn'>
+                <button
+                  role='cancelBtn'
+                  tabIndex={-1}
+                >
                   <BiX
                     size={20}
                     onClick={handleClearClick}
                   />
                 </button>
               )}
-              <button>
+              <button tabIndex={-1}>
                 {anchorEl ? (
                   <BiChevronUp
                     size={20}

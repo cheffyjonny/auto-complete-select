@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom'
 
 import style from './List.module.css'
 import type { Option } from './Select'
-import convertNumbering from '@/hooks/convertNumbering'
+import convertNumbering from '@/utils/convertNumbering'
 
 type ListProps = {
   width: number
