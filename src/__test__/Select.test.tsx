@@ -8,15 +8,14 @@ import '@testing-library/jest-dom'
 import { Select } from '@/components/Select'
 import { fetchTop100Films } from '../server/fetchTop100Films'
 
-test('Fetch data', () => {
+test('Testing fetch films', () => {
   expect.assertions(1)
   return fetchTop100Films().then((data) => {
     expect(data).toBeDefined()
   })
 })
 
-test('Fetch data from API', async () => {
-  // expect.assertions(1)
+test('It should fetch data from API', async () => {
   const handleClick = jest.fn()
 
   render(
@@ -31,7 +30,7 @@ test('Fetch data from API', async () => {
   expect(screen.getByText(/Movie/i)).toBeInTheDocument()
 })
 
-test('It should have the value of the option clicked', () => {
+test('It should have and show right options that is passed', () => {
   const mockData = [
     { label: 'The Shawshank Redemption', value: '1' },
     { label: 'The Godfather', value: '2' },
@@ -66,7 +65,7 @@ test('It should have the value of the option clicked', () => {
   expect(firstChild).toHaveTextContent(/The Shawshank Redemption/i)
 })
 
-test('Renders Select.tsx with label', async () => {
+test('It should render with label that is passed', async () => {
   const mockData = [
     { label: 'The Shawshank Redemption', value: '1' },
     { label: 'The Godfather', value: '2' },
@@ -90,7 +89,7 @@ test('Renders Select.tsx with label', async () => {
   expect(selectElement).toBeInTheDocument()
 })
 
-test('Renders Select.tsx without label', async () => {
+test('It should render with the default label', async () => {
   const mockData = [
     { label: 'The Shawshank Redemption', value: '1' },
     { label: 'The Godfather', value: '2' },
@@ -113,7 +112,7 @@ test('Renders Select.tsx without label', async () => {
   expect(selectElement).toHaveTextContent('label')
 })
 
-test('Renders Select.tsx with value', async () => {
+test('It should the value that is passed', async () => {
   const mockData = [
     { label: 'The Shawshank Redemption', value: '1' },
     { label: 'The Godfather', value: '2' },
@@ -134,7 +133,7 @@ test('Renders Select.tsx with value', async () => {
   expect(selectElement).toHaveValue('The Shawshank Redemption')
 })
 
-test('Renders Select.tsx with value', async () => {
+test('It should have cancel button', async () => {
   const mockData = [
     { label: 'The Shawshank Redemption', value: '1' },
     { label: 'The Godfather', value: '2' },

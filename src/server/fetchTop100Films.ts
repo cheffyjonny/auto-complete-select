@@ -19,9 +19,7 @@ const delay = (ms: number) => {
   )
 }
 
-// Changed response structure to add current status.
 // It's possible to make something more realistic with MSW, json-server, etc.
-// However, personally it's not necessary to build with extra library for the task's purpose.
 const fetchTop100Films = async (): Promise<Response> => {
   // Init response with 'in progress'
   const res: Response = {
