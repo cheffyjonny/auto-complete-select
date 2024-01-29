@@ -81,6 +81,7 @@ const List = ({ width, identity, children }: ListProps) => {
           style={{ width: width }}
         >
           <div
+            role='portal-children'
             id={`options-${identity}`}
             key={`portal-${identity}`}
             className={`${style.list}`}

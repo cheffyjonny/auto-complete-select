@@ -260,7 +260,7 @@ function Select({
 
         try {
           const response = await options()
-          const optionsResponse = response.result as Options
+          const optionsResponse = response.res.result as Options
           setDynamicWidth(findLongestLabel(optionsResponse).label.length * 8.5)
           setAbsoluteOptions(optionsResponse)
           if (value) {
@@ -276,7 +276,6 @@ function Select({
       fetchOptions()
     }
   }, [])
-
   // Scroll to the focusedIndex when handleKeyDown runs.
   useEffect(() => {
     if (!resultContainerRef.current) {
