@@ -1,4 +1,4 @@
-# Intro
+# Introduction
 
 This is a generic component. It's a auto complete select box that take options from an array or an API call.<br>
 It has used only React + TS.
