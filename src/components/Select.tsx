@@ -10,7 +10,7 @@ import {
 } from 'react'
 import { BiChevronDown, BiChevronUp, BiX } from 'react-icons/bi'
 
-import style from './select.module.css'
+import style from './Select.module.css'
 import List from './List'
 import type { Response } from '../server/fetchTop100Films'
 import convertNumbering from '@/utils/convertNumbering'
